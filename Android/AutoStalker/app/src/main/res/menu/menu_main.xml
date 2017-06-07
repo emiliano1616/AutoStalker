@@ -13,4 +13,10 @@
         android:orderInCategory="100"
         android:title="@string/action_testbluetooth"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_chat"
+        android:orderInCategory="100"
+        android:title="@string/test_protocol"
+        app:showAsAction="never" />
 </menu>

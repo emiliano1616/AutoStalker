@@ -53,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
             Intent myIntent = new Intent(this,TestBluetoothActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
             this.startActivity(myIntent);
+        }else if (id == R.id.action_chat) {
+            Toast.makeText(this,"Abriendo chat",Toast.LENGTH_SHORT).show();
+            Intent myIntent = new Intent(this,ChatClientActivity.class);
+//        myIntent.putExtra("key", value); //Optional parameters
+            this.startActivity(myIntent);
         }
 
 

@@ -3,4 +3,8 @@
     <string name="action_settings">Settings</string>
     <string name="action_configuracion">Configuracion</string>
     <string name="action_testbluetooth">Probar bluetooth</string>
+    <string name="test_protocol">Probar Protocolo</string>
+
+
+
 </resources>
