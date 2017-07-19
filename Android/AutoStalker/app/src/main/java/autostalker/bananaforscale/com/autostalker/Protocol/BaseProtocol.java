@@ -19,32 +19,32 @@ public abstract class BaseProtocol {
 
     public String toJson(){
         GsonBuilder gson = new GsonBuilder();
-        gson.registerTypeAdapter(Enum.tipoMensaje.class, new TipoMensajeSerializer());
+        gson.registerTypeAdapter(Enum.messageType.class, new messageTypeSerializer());
         return gson.create().toJson(this);
 //        return gson.toJson(this);
     }
 }
 
-class TipoMensajeSerializer implements JsonSerializer<Enum.tipoMensaje> {
-    public JsonElement serialize(Enum.tipoMensaje src, Type typeOfSrc, JsonSerializationContext context) {
+class messageTypeSerializer implements JsonSerializer<Enum.messageType> {
+    public JsonElement serialize(Enum.messageType src, Type typeOfSrc, JsonSerializationContext context) {
         return new JsonPrimitive( src.toString());
     }
 }
 
-class TipoMensajeDeserializer implements JsonDeserializer<Enum.tipoMensaje> {
-    public Enum.tipoMensaje deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+class messageTypeDeserializer implements JsonDeserializer<Enum.messageType> {
+    public Enum.messageType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
             throws JsonParseException {
-        if ( Enum.tipoMensaje.Movement.value == json.getAsInt()) {
-            return Enum.tipoMensaje.Movement;
+        if ( Enum.messageType.Movement.value == json.getAsInt()) {
+            return Enum.messageType.Movement;
         }
-        if ( Enum.tipoMensaje.Settings.value == json.getAsInt()) {
-            return Enum.tipoMensaje.Settings;
+        if ( Enum.messageType.Settings.value == json.getAsInt()) {
+            return Enum.messageType.Settings;
         }
-        if ( Enum.tipoMensaje.ReturnCommand.value == json.getAsInt()) {
-            return Enum.tipoMensaje.ReturnCommand;
+        if ( Enum.messageType.ReturnCommand.value == json.getAsInt()) {
+            return Enum.messageType.ReturnCommand;
         }
-//        if ( Enum.tipoMensaje.Movement.value == json.getAsInt()) {
-//            return Enum.tipoMensaje.Movement;
+//        if ( Enum.messageType.Movement.value == json.getAsInt()) {
+//            return Enum.messageType.Movement;
 //        }
         return null;
     }

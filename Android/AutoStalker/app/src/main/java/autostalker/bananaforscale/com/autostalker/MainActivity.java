@@ -2,6 +2,7 @@ package autostalker.bananaforscale.com.autostalker;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -58,7 +64,12 @@ public class MainActivity extends AppCompatActivity {
             Intent myIntent = new Intent(this,ChatClientActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
             this.startActivity(myIntent);
-        }
+        }else if (id == R.id.action_server) {
+        Toast.makeText(this,"Abriendo chat",Toast.LENGTH_SHORT).show();
+        Intent myIntent = new Intent(this,ServerTestActivity.class);
+//        myIntent.putExtra("key", value); //Optional parameters
+        this.startActivity(myIntent);
+    }
 
 
         return super.onOptionsItemSelected(item);

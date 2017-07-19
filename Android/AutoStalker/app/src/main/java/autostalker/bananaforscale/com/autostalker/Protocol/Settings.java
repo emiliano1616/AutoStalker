@@ -5,4 +5,5 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class Settings extends BaseProtocol {
+    private final Enum.messageType messageType = Enum.messageType.Settings;
 }

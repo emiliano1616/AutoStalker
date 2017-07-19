@@ -5,4 +5,5 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class ReturnCommand extends BaseProtocol {
+    private final Enum.messageType messageType = Enum.messageType.ReturnCommand;
 }

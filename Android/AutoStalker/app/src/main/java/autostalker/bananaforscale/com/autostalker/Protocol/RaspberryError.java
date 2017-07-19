@@ -5,6 +5,7 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class RaspberryError extends BaseProtocol {
+    private final Enum.messageType messageType = Enum.messageType.RaspberryError;
     public String message;
     public String stackTrace;
 }

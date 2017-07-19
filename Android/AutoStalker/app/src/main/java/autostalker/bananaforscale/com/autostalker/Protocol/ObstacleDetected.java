@@ -5,5 +5,6 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class ObstacleDetected extends BaseProtocol {
-    public int lado;
+    private final Enum.messageType messageType = Enum.messageType.ObstacleDetected;
+    public int side;
 }

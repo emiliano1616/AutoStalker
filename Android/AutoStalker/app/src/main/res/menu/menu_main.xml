@@ -4,19 +4,25 @@
     tools:context="autostalker.bananaforscale.com.autostalker.MainActivity">
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="101"
         android:title="@string/action_configuracion"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_test_bluetooth"
-        android:orderInCategory="100"
+        android:orderInCategory="102"
         android:title="@string/action_testbluetooth"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_chat"
-        android:orderInCategory="100"
-        android:title="@string/test_protocol"
+        android:orderInCategory="103"
+        android:title="@string/test_protocol_send"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_server"
+        android:orderInCategory="104"
+        android:title="@string/test_protocol_receive"
         app:showAsAction="never" />
 </menu>

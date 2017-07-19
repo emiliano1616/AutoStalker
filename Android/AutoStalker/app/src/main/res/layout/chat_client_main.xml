@@ -45,7 +45,26 @@
             android:layout_height="wrap_content"
             android:id="@+id/btnSendMovement"
             android:layout_gravity="center_vertical"
-            android:text="posicion" />
+            android:text="movimiento" />
+
+        <Button android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSendSettings"
+            android:layout_gravity="center_vertical"
+            android:text="settings" />
+
+        <Button android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSendReturn"
+            android:layout_gravity="center_vertical"
+            android:text="retorno" />
+
+        <Button android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSendPing"
+            android:layout_gravity="center_vertical"
+            android:text="ping" />
+
 
     </LinearLayout>
 </LinearLayout>

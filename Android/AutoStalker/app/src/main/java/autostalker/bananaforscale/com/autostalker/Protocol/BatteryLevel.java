@@ -5,5 +5,6 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class BatteryLevel extends BaseProtocol {
+    private final Enum.messageType messageType = Enum.messageType.BatteryLevel;
     public int batteryLevel;
 }

@@ -5,14 +5,14 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public  class Enum {
-    public static enum tipoMensaje{
+    public static enum messageType{
         Movement(1),
         Settings(2),
         ReturnCommand(3),
         ShutDownCommand(4),
         CameraShutDownCommand(5),
         ObstacleDetected(6),
-        BatteryLevell(7),
+        BatteryLevel(7),
         Position(8),
         RaspberryError(9),
         Ping(10),
@@ -20,7 +20,7 @@ public  class Enum {
         ;
 
         public final int value;
-        private tipoMensaje(int val){
+        private messageType(int val){
             this.value = val;
         }
 

@@ -13,6 +13,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import TCP.TcpClient;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
+import autostalker.bananaforscale.com.autostalker.Protocol.Ping;
+import autostalker.bananaforscale.com.autostalker.Protocol.ReturnCommand;
+import autostalker.bananaforscale.com.autostalker.Protocol.Settings;
 
 import java.util.ArrayList;
 
@@ -34,14 +37,17 @@ public class ChatClientActivity extends Activity {
         Button send = (Button) findViewById(R.id.send_button);
         final Button btnConnect = (Button) findViewById(R.id.connect_button);
         Button btnSendMovement = (Button) findViewById(R.id.btnSendMovement);
+        Button btnSendPing = (Button) findViewById(R.id.btnSendPing);
+        Button btnSendReturn = (Button) findViewById(R.id.btnSendReturn);
+        Button btnSendSettings = (Button) findViewById(R.id.btnSendSettings);
 
         btnSendMovement.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 Movement movement = new Movement();
-                movement.angulo = 1;
-                movement.potencia = 22;
+                movement.angle = 1;
+                movement.power = 22;
                 String message = movement.toJson();
 
                 //add the text in the arrayList
@@ -54,7 +60,66 @@ public class ChatClientActivity extends Activity {
 
                 //refresh the list
                 mAdapter.notifyDataSetChanged();
-                editText.setText("");
+            }
+        });
+
+        btnSendPing.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Ping movement = new Ping();
+                String message = movement.toJson();
+
+                //add the text in the arrayList
+                arrayList.add("c: " + message);
+
+                //sends the message to the server
+                if (mTcpClient != null) {
+                    mTcpClient.sendMessage(message);
+                }
+
+                //refresh the list
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        btnSendReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                ReturnCommand returnCmd = new ReturnCommand();
+                String message = returnCmd.toJson();
+
+                //add the text in the arrayList
+                arrayList.add("c: " + message);
+
+                //sends the message to the server
+                if (mTcpClient != null) {
+                    mTcpClient.sendMessage(message);
+                }
+
+                //refresh the list
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        btnSendSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Settings settings = new Settings();
+                String message = settings.toJson();
+
+                //add the text in the arrayList
+                arrayList.add("c: " + message);
+
+                //sends the message to the server
+                if (mTcpClient != null) {
+                    mTcpClient.sendMessage(message);
+                }
+
+                //refresh the list
+                mAdapter.notifyDataSetChanged();
             }
         });
 

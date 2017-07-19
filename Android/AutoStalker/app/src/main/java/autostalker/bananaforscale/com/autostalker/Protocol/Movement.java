@@ -5,8 +5,8 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class Movement extends BaseProtocol {
-    private final Enum.tipoMensaje tipoMensaje = Enum.tipoMensaje.Movement;
-    public int angulo;
-    public int potencia;
+    private final Enum.messageType messageType = Enum.messageType.Movement;
+    public int angle;
+    public int power;
 
 }

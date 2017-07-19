@@ -5,4 +5,5 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class PingAnswer extends BaseProtocol {
+    private final Enum.messageType messageType = Enum.messageType.PingAnswer;
 }

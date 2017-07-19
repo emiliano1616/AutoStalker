@@ -5,5 +5,5 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class ShutDownCommand extends BaseProtocol {
-
+    private final Enum.messageType messageType = Enum.messageType.ShutDownCommand;
 }
