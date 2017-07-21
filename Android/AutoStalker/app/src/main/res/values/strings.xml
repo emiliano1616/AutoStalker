@@ -9,6 +9,8 @@
     <string name="btn_settings"><b>CONFIGURACION</b></string>
     <string name="btn_help"><b>AYUDA</b></string>
     <string name="btn_last_travel"><b>ULTIMO VIAJE</b></string>
+    <string name="txt_connect_with_car"><b>Conectar con el auto</b></string>
+    <string name="txt_config_pad"><b>Configurar joystick</b></string>
 
 
 

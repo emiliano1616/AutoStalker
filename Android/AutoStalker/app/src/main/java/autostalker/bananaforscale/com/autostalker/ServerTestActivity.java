@@ -54,6 +54,8 @@ public class ServerTestActivity extends Activity {
                     @Override
                     public void messageReceived(final String message) {
                         Log.d("mensaje",message);
+
+
                         runOnUiThread(new Runnable() {
 
                             @Override
