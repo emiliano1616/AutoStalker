@@ -10,6 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +25,15 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
         setContentView(R.layout.activity_main);
+
+        ImageView imgCar = (ImageView) findViewById(R.id.imgCar);
+
+        ImageView imgHelp = (ImageView) findViewById(R.id.imgHelp);
+
+        ImageView imgLastTravel = (ImageView) findViewById(R.id.imgLastTravel);
+
+        ImageView imgSettings = (ImageView) findViewById(R.id.imgSettings);
+
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
