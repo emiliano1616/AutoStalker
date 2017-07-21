@@ -6,28 +6,73 @@
     android:layout_height="match_parent"
     tools:context="autostalker.bananaforscale.com.autostalker.MainActivity">
 
-    <android.support.design.widget.AppBarLayout
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="match_parent"
+        android:background="@drawable/road"
+        android:gravity="center"
+        android:orientation="vertical">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+        <ImageView
+            android:id="@+id/imgCar"
+            android:layout_width="35pt"
+            android:layout_height="35pt"
+            android:src="@drawable/car" />
+
+        <TextView
+            android:id="@+id/textView"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="20dp"
+            android:text="@string/btn_drive_mode"
+            android:textAlignment="center" />
 
-    </android.support.design.widget.AppBarLayout>
+        <ImageView
+            android:id="@+id/imgSettings"
+            android:layout_width="35pt"
+            android:layout_height="35pt"
+            android:layout_marginTop="25dp"
+            android:src="@drawable/settings" />
 
-    <include layout="@layout/content_main" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/btn_settings"
+            android:textSize="20dp"
+            android:textAlignment="center" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        <ImageView
+            android:id="@+id/imgLastTravel"
+            android:layout_width="35pt"
+            android:layout_height="35pt"
+            android:layout_marginTop="25dp"
+            android:src="@drawable/camera" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/btn_last_travel"
+            android:textAlignment="center" />
+
+        <ImageView
+            android:id="@+id/imgHelp"
+            android:layout_width="35pt"
+            android:layout_height="35pt"
+            android:layout_marginTop="25dp"
+            android:src="@drawable/help" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/btn_help"
+            android:textAlignment="center" />
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

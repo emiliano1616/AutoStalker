@@ -5,6 +5,10 @@
     <string name="action_testbluetooth">Probar bluetooth</string>
     <string name="test_protocol_send">Probar envio mensajes</string>
     <string name="test_protocol_receive">Probar recepcion mensajes</string>
+    <string name="btn_drive_mode"><b>MODO CONDUCCION</b></string>
+    <string name="btn_settings"><b>CONFIGURACION</b></string>
+    <string name="btn_help"><b>AYUDA</b></string>
+    <string name="btn_last_travel"><b>ULTIMO VIAJE</b></string>
 
 
 
