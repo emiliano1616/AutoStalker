@@ -11,8 +11,10 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import autostalker.bananaforscale.com.autostalker.Constants;
@@ -84,6 +86,17 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
             }
         });
 
+        TextView btnController = (TextView) findViewById(R.id.btnController);
+        btnController.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                waiting = WAITING_UP;
+                CommonUtils.showMessage("Presione arriba","Presione arriba",v.getContext());
+
+            }
+        });
+
+
         RadioButton radioButton640 = (RadioButton) findViewById(R.id.radioButton640);
         RadioButton radioButton320 = (RadioButton) findViewById(R.id.radioButton320);
 
@@ -128,6 +141,8 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
         SharedPreferences settings = getPreferences(0);
         SharedPreferences.Editor editor = settings.edit();
 
+        Log.d("esperando", String.valueOf(waiting)  );
+
         switch (waiting) {
             case WAITING_UP:
                 editor.putInt(Constants.CONTROLLER_SETTINGS_UP,keyCode);
@@ -171,23 +186,16 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
 //        int deviceId = event.getDeviceId();
 //        if (deviceId != -1) {
 
-        Log.d("aver","event.getRepeatCount() " + String.valueOf(event.getRepeatCount()));
+//        Log.d("aver","event.getRepeatCount() " + String.valueOf(event.getRepeatCount()));
 
-        boolean handled = false;
         if (event.getRepeatCount() == 0) {
             switch (keyCode) {
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                case KeyEvent.KEYCODE_DPAD_UP:
-                case KeyEvent.KEYCODE_DPAD_DOWN:
-                    ProcessKeyDown(keyCode);
-
-                    break;
                 case KeyEvent.KEYCODE_BACK:
                     super.onBackPressed();
                     break;
                 default:
 //                    Toast.makeText(this,"otra cosa: " + String.valueOf(keyCode),Toast.LENGTH_SHORT).show();
+                    ProcessKeyDown(keyCode);
 
                     //                    if (isFireKey(keyCode)) {
                     //                        fire();
@@ -220,7 +228,7 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        Log.d("aver","onGenericMotionEvent");
+//        Log.d("aver","onGenericMotionEvent   " + String.valueOf(event.getAction()));
 
         mInputManager.onGenericMotionEvent(event);
 
