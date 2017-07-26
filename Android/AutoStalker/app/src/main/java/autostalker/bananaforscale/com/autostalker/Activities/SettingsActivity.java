@@ -17,7 +17,11 @@ import android.widget.Toast;
 
 import autostalker.bananaforscale.com.autostalker.Constants;
 import autostalker.bananaforscale.com.autostalker.Interfaces.InputManagerCompat;
+import autostalker.bananaforscale.com.autostalker.Protocol.BaseProtocol;
+import autostalker.bananaforscale.com.autostalker.Protocol.BatteryLevel;
+import autostalker.bananaforscale.com.autostalker.Protocol.Ping;
 import autostalker.bananaforscale.com.autostalker.R;
+import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
 
 /**
  * Created by Emiliano on 20/07/2017.
@@ -45,6 +49,9 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
 
         ImageView imgWifi = (ImageView) findViewById(R.id.imgWifi);
 
+
+
+
         imgWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,8 +65,21 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
             @Override
             public void onClick(View v) {
 
-                Toast.makeText(v.getContext(),"Presione el pad hacia adelante",Toast.LENGTH_LONG).show();
-                waiting = 1;
+                String msg = "{\n" +
+                        " messageType:7,\n" +
+                        " batteryLevel:90\n" +
+                        "}";
+
+                Ping ping = Ping.fromJson(msg,Ping.class);
+                switch(ping.messageType.value){
+                    case 7:
+                        BatteryLevel batteryLevel = BatteryLevel.fromJson(msg,BatteryLevel.class);
+                        //todo some <code></code>
+                        break;
+                    case 8:
+
+                }
+
 
             }
         });
@@ -112,22 +132,26 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
             case WAITING_UP:
                 editor.putInt(Constants.CONTROLLER_SETTINGS_UP,keyCode);
                 editor.commit();
+                waiting = WAITING_DOWN;
+                CommonUtils.showMessage("Presione abajo","Presione abajo",this);
                 break;
             case WAITING_DOWN:
                 editor.putInt(Constants.CONTROLLER_SETTINGS_DOWN,keyCode);
                 editor.commit();
-
+                waiting = WAITING_LEFT;
+                CommonUtils.showMessage("Presione izquierda","Presione izquierda",this);
                 break;
             case WAITING_LEFT:
                 editor.putInt(Constants.CONTROLLER_SETTINGS_LEFT,keyCode);
                 editor.commit();
-
+                waiting = WAITING_RIGHT;
+                CommonUtils.showMessage("Presione derecha","Presione derecha",this);
                 break;
             case WAITING_RIGHT:
                 editor.putInt(Constants.CONTROLLER_SETTINGS_RIGHT,keyCode);
                 editor.commit();
                 waiting = WAITING_RETURN;
-
+                CommonUtils.showMessage("Presione el boton de retorno","Presione el boton de retorno",this);
                 break;
             case WAITING_RETURN:
                 editor.putInt(Constants.CONTROLLER_SETTINGS_RETURN,keyCode);
@@ -153,34 +177,17 @@ public class SettingsActivity extends Activity implements InputManagerCompat.Inp
         if (event.getRepeatCount() == 0) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_DPAD_LEFT:
-                    //ProcessKeyDown(keyCode,)
-
-                    waiting = WAITING_RIGHT;
-
-                    break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    Toast.makeText(this,"Derecha",Toast.LENGTH_SHORT).show();
-
-                    break;
                 case KeyEvent.KEYCODE_DPAD_UP:
-                    Toast.makeText(this,"arriba",Toast.LENGTH_SHORT).show();
-
-                    waiting = WAITING_DOWN;
-
-
-                    break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
-                    Toast.makeText(this,"abajo",Toast.LENGTH_SHORT).show();
-
-                    waiting = WAITING_LEFT;
-
+                    ProcessKeyDown(keyCode);
 
                     break;
                 case KeyEvent.KEYCODE_BACK:
                     super.onBackPressed();
                     break;
                 default:
-                    Toast.makeText(this,"otra cosa: " + String.valueOf(keyCode),Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(this,"otra cosa: " + String.valueOf(keyCode),Toast.LENGTH_SHORT).show();
 
                     //                    if (isFireKey(keyCode)) {
                     //                        fire();

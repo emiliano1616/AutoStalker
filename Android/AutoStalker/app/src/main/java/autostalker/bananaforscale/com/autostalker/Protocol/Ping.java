@@ -5,5 +5,5 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
  */
 
 public class Ping extends BaseProtocol {
-    private final Enum.messageType messageType = Enum.messageType.Ping;
+    public final Enum.messageType messageType = Enum.messageType.Ping;
 }

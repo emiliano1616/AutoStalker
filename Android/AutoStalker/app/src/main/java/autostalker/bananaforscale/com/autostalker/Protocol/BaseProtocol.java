@@ -1,5 +1,6 @@
 package autostalker.bananaforscale.com.autostalker.Protocol;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -23,6 +24,12 @@ public abstract class BaseProtocol {
         return gson.create().toJson(this);
 //        return gson.toJson(this);
     }
+
+    public static <T> T  fromJson(String json, Class<T>  type ){
+        GsonBuilder gson = new GsonBuilder();
+        gson.registerTypeAdapter(Enum.messageType.class, new messageTypeDeserializer());
+        return gson.create().fromJson(json, type );
+    }
 }
 
 class messageTypeSerializer implements JsonSerializer<Enum.messageType> {
@@ -42,6 +49,10 @@ class messageTypeDeserializer implements JsonDeserializer<Enum.messageType> {
         }
         if ( Enum.messageType.ReturnCommand.value == json.getAsInt()) {
             return Enum.messageType.ReturnCommand;
+        }
+
+        if ( Enum.messageType.BatteryLevel.value == json.getAsInt()) {
+            return Enum.messageType.BatteryLevel;
         }
 //        if ( Enum.messageType.Movement.value == json.getAsInt()) {
 //            return Enum.messageType.Movement;
