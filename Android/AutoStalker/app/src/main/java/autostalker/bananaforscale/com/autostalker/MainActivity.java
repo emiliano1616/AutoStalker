@@ -14,12 +14,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import autostalker.bananaforscale.com.autostalker.Activities.SettingsActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -33,6 +34,15 @@ public class MainActivity extends AppCompatActivity {
         ImageView imgLastTravel = (ImageView) findViewById(R.id.imgLastTravel);
 
         ImageView imgSettings = (ImageView) findViewById(R.id.imgSettings);
+
+        imgSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent myIntent = new Intent(v.getContext(),SettingsActivity.class);
+                v.getContext().startActivity(myIntent);
+            }
+        });
 
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
