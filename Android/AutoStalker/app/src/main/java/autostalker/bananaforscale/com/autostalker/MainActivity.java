@@ -1,6 +1,9 @@
 package autostalker.bananaforscale.com.autostalker;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
@@ -44,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        imgHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = newFacebookIntent(v.getContext().getPackageManager(),"https://www.facebook.com/proyectoautostalker/");
+                startActivity(browserIntent);
+            }
+        });
+
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -53,6 +64,19 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //            }
 //        });
+    }
+
+    public static Intent newFacebookIntent(PackageManager pm, String url) {
+        Uri uri = Uri.parse(url);
+        try {
+            ApplicationInfo applicationInfo = pm.getApplicationInfo("com.facebook.katana", 0);
+            if (applicationInfo.enabled) {
+                // http://stackoverflow.com/a/24547437/1048340
+                uri = Uri.parse("fb://facewebmodal/f?href=" + url);
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+        return new Intent(Intent.ACTION_VIEW, uri);
     }
 
     @Override
