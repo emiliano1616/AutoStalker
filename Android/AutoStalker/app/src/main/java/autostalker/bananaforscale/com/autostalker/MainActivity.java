@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import autostalker.bananaforscale.com.autostalker.Activities.DriveModeActivity;
 import autostalker.bananaforscale.com.autostalker.Activities.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,9 +33,31 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView imgCar = (ImageView) findViewById(R.id.imgCar);
 
+
+        imgCar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(),"Abriendo modo conduccion",Toast.LENGTH_SHORT).show();
+                Intent myIntent = new Intent(v.getContext(),DriveModeActivity.class);
+//        myIntent.putExtra("key", value); //Optional parameters
+                v.getContext().startActivity(myIntent);
+            }
+        });
+
+
         ImageView imgHelp = (ImageView) findViewById(R.id.imgHelp);
 
         ImageView imgLastTravel = (ImageView) findViewById(R.id.imgLastTravel);
+
+        imgLastTravel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
+                Intent myIntent = new Intent(v.getContext(),ChatClientActivity.class);
+//        myIntent.putExtra("key", value); //Optional parameters
+                v.getContext().startActivity(myIntent);
+            }
+        });
 
         ImageView imgSettings = (ImageView) findViewById(R.id.imgSettings);
 

@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.hardware.input.InputManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +23,8 @@ import com.google.vr.sdk.widgets.video.VrVideoView;
 
 //import com.example.android.apis.R;
 
+import TCP.TcpClient;
+import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
 import autostalker.bananaforscale.com.autostalker.R;
 import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
 
@@ -29,7 +33,8 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
     private VrVideoView mVrVideoView;
     private static final String TAG = "GameControllerInput";
-    private InputManager mInputManager;
+    //private InputManager mInputManager;
+    private TcpClient mTcpClient;
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
@@ -63,6 +68,9 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.drive_mode);
 
+
+        new ConnectTask().execute("");
+
         //initJoystick();
         initViews();
     }
@@ -81,10 +89,36 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             }*/
 
 //            CommonUtils.showMessage("Axis: Report", motionEvent.getX() + "|" + motionEvent.getY(), this.getContext());
-            Double angle = CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() * -1);
-            Double power = CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY() * -1);
+            double angle =  CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
+                    -1);
+            double power =  CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY
+                    () *
+                    -1);
 
-            CommonUtils.showMessage("Angle and power ", angle.toString() + "|" + power.toString(), this);
+            Log.d("Angle and power ", String.valueOf( angle) + "|" + String.valueOf( power));
+
+            if(mTcpClient.isConnected()) {
+                if(angle > 135)
+                    angle = 135;
+                if(angle < 45)
+                    angle = 45;
+
+                power = power* 100;
+                if(power > 100)
+                    power = 100;
+
+                Movement movement = new Movement();
+                movement.angle = (int)angle;
+                movement.power = (int)power;
+
+                String message = movement.toJson();
+                Log.d("sending",message);
+
+                //sends the message to the server
+                if (mTcpClient != null) {
+                    mTcpClient.sendMessage(message);
+                }
+            }
         }
 
         return 0; //directionPressed;
@@ -110,6 +144,44 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
         // Mensaje
 
+    }
+
+    public class ConnectTask extends AsyncTask<String, String, TcpClient> {
+
+        @Override
+        protected TcpClient doInBackground(String... message) {
+
+            //we create a TCPClient object and
+            mTcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
+                @Override
+                //here the messageReceived method is implemented
+                public void messageReceived(String message) {
+                    Log.d("TCP",message);
+                    //this method calls the onProgressUpdate
+                    publishProgress(message);
+                }
+
+                @Override
+                public void connectionStablished() {
+                    Log.d("TCP","Connection stablished");
+                }
+            });
+            mTcpClient.run();
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+
+            Log.d("progress","progressuptdate");
+            //in the arrayList we add the messaged received from server
+//            arrayList.add(values[0]);
+            // notify the adapter that the data set has changed. This means that new message received
+            // from server was added to the list
+//            mAdapter.notifyDataSetChanged();
+        }
     }
 
 }

@@ -51,7 +51,7 @@ public class ChatClientActivity extends Activity {
                 String message = movement.toJson();
 
                 //add the text in the arrayList
-                arrayList.add("c: " + message);
+//                arrayList.add("c: " + message);
 
                 //sends the message to the server
                 if (mTcpClient != null) {
@@ -59,7 +59,7 @@ public class ChatClientActivity extends Activity {
                 }
 
                 //refresh the list
-                mAdapter.notifyDataSetChanged();
+//                mAdapter.notifyDataSetChanged();
             }
         });
 
@@ -239,7 +239,13 @@ public class ChatClientActivity extends Activity {
                     //this method calls the onProgressUpdate
                     publishProgress(message);
                 }
+                @Override
+                public void connectionStablished() {
+                    Log.d("TCP","Connection stablished");
+                }
             });
+
+
             mTcpClient.run();
 
             return null;

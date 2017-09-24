@@ -44,6 +44,6 @@ public class CommonUtils {
             x = x * -1;
         }
         double hip = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
-        return hip / 1.41; // 1.41 the max  hip for 1,1 offset
+        return hip; // / 1.41; // 1.41 the max  hip for 1,1 offset
     }
 }

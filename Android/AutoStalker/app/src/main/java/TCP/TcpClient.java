@@ -11,7 +11,7 @@ import java.net.Socket;
 
 public class TcpClient {
 
-    public static final String SERVER_IP = "192.168.0.8"; //your computer IP address
+    public static final String SERVER_IP = "192.168.0.5"; //your computer IP address
 //    public static final String SERVER_IP = "10.0.2.2"; //your computer IP address
     public static final int SERVER_PORT = 5555;
     // message to send to the server
@@ -20,10 +20,15 @@ public class TcpClient {
     private OnMessageReceived mMessageListener = null;
     // while this is true, the server will continue running
     private boolean mRun = false;
+    private boolean mConnectionStablished = false;
     // used to send messages
     private PrintWriter mBufferOut;
     // used to read messages from the server
     private BufferedReader mBufferIn;
+
+    public boolean isConnected() {
+        return mConnectionStablished && mRun;
+    }
 
     /**
      * Constructor of the class. OnMessagedReceived listens for the messages received from server
@@ -53,7 +58,7 @@ public class TcpClient {
         sendMessage(Constants.CLOSED_CONNECTION+"Kazy");
 
         mRun = false;
-
+        mConnectionStablished = false;
         if (mBufferOut != null) {
             mBufferOut.flush();
             mBufferOut.close();
@@ -79,13 +84,19 @@ public class TcpClient {
             Socket socket = new Socket(serverAddr, SERVER_PORT);
 
             try {
+                mConnectionStablished = true;
+                mMessageListener.connectionStablished();
+                Log.d("TCP Client", "connection successfull");
+
                 //sends the message to the server
                 mBufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                Log.d("TCP Client", "2");
+
                 //receives the message which the server sends back
                 mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // send login name
-
-                sendMessage(Constants.LOGIN_NAME+"Kazy");
+                Log.d("TCP Client", "3");
+                //sendMessage(Constants.LOGIN_NAME+"Kazy");
 
                 //in this while the client listens for the messages sent by the server
                 while (mRun) {
@@ -123,5 +134,6 @@ public class TcpClient {
     //class at on asynckTask doInBackground
     public interface OnMessageReceived {
         public void messageReceived(String message);
+        public void connectionStablished();
     }
 }
