@@ -2,10 +2,15 @@ package autostalker.bananaforscale.com.autostalker.Activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.PixelFormat;
 import android.hardware.input.InputManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +22,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.view.View.OnTouchListener;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
@@ -27,11 +34,13 @@ import TCP.TcpClient;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
 import autostalker.bananaforscale.com.autostalker.R;
 import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
+import autostalker.bananaforscale.com.autostalker.Utils.MyVideoView;
 
 
 public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener  {
 
-    private VrVideoView mVrVideoView;
+    private MyVideoView mVideoView1;
+    private MyVideoView mVideoView2;
     private static final String TAG = "GameControllerInput";
     //private InputManager mInputManager;
     private TcpClient mTcpClient;
@@ -125,25 +134,118 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     }
 
     private void initViews() {
-        mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
+        mVideoView1 = (MyVideoView) findViewById(R.id.video_view1);
+        mVideoView2 = (MyVideoView) findViewById(R.id.video_view2);
 
-        String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
+        mVideoView1.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.d("VideoViewError", Integer.toString(what));
+                //logs the error you're running into
+
+                //You can also put a switch case here to
+                //determine what error it is running into exactly:
+                String errorString = "Media Player Error: ";
+                switch (what) {
+                    case MediaPlayer.MEDIA_ERROR_UNKNOWN: {
+                        errorString += "Unspecified media player error. ";
+                    }
+                    case MediaPlayer.MEDIA_ERROR_SERVER_DIED: {
+                        errorString += "Media server died. ";
+                    }
+                }
+                switch (extra) {
+                    case MediaPlayer.MEDIA_ERROR_IO: {
+                        errorString += "File or network related operation error.";
+                    }
+                    case MediaPlayer.MEDIA_ERROR_MALFORMED: {
+                        errorString += "Bitstream is not conforming to the related coding standard or file spec.";
+                    }
+                    case MediaPlayer.MEDIA_ERROR_UNSUPPORTED: {
+                        errorString += "Bitstream is conforming to the related coding standard or file spec, but the media framework does not support the feature.";
+                    }
+                    case MediaPlayer.MEDIA_ERROR_TIMED_OUT: {
+                        errorString += "Media operation timed out.";
+                    }
+                }
+                Log.d("ERROR__", errorString);
+                return true;
+            }
+        });
+
+//        String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
+//        String vidAddress = "http://217.34.97.60:8081/mjpg/video.mjpg";
         //String vidAddress = "http://192.168.0.114:8200/MediaItems/21.mp4";
         //String vidAddress = "http://192.168.0.114:8090?action=stream";
         //String vidAddress = "http://192.168.0.114:8081";
-        //Uri vidUri = Uri.parse(vidAddress);
+//        Uri vidUri = Uri.parse(vidAddress);
 
-        try {
-            VrVideoView.Options options = new VrVideoView.Options();
-            options.inputType = VrVideoView.Options.TYPE_MONO;
-            //mVrVideoView.loadVideo(vidUri, options);
-            //mVrVideoView.loadVideoFromAsset("seaturtle.mp4", options);
-        } catch( Exception /*IOException */ e ) {
-            //Handle exception
-        }
+        Intent intent = new Intent();
+        intent.setType("video/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,"Select Video"),1);
+
+//        try {
+////            VideoView.Options options = new VideoView.Options();
+//
+////            options.inputType = VrVideoView.Options.TYPE_MONO;
+//            mVideoView.setVideoURI(vidUri);
+//            mVideoView.requestFocus();
+////            mVideoView.setMediaController( new MediaController(this));
+//            mVideoView.start();
+//            //mVrVideoView.loadVideoFromAsset("seaturtle.mp4", options);
+//        } catch( Exception /*IOException */ e ) {
+//            Log.e("myerror",e.getMessage());
+//            //Handle exception
+//        }
+
 
         // Mensaje
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 1) {
+                Uri selectedImageUri = data.getData();
+
+                // OI FILE Manager
+//                filemanagerstring = selectedImageUri.getPath();
+
+                // MEDIA GALLERY
+                String selectedImagePath = getPath(selectedImageUri);
+                //Log.d("stringgg",selectedImagePath);
+
+                try {
+
+                    mVideoView1.setVideoURI(selectedImageUri);
+//                    mVideoView1.requestFocus();
+                    mVideoView1.start();
+                    mVideoView2.setVideoURI(selectedImageUri);
+                    mVideoView2.start();
+
+                } catch( Exception /*IOException */ e ) {
+                    Log.e("myerror",e.getMessage());
+                }
+
+            }
+        }
+    }
+
+    // UPDATED!
+    public String getPath(Uri uri) {
+        String[] projection = { MediaStore.Video.Media.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
+            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } else
+            return null;
     }
 
     public class ConnectTask extends AsyncTask<String, String, TcpClient> {

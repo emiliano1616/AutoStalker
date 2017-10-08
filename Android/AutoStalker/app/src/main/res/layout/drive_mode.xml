@@ -1,16 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/layout_joystick_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/layout_joystick_parent"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="@android:color/black"
+             android:gravity="center">
 
-    <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:text="Carlos"/>-->
-    <com.google.vr.sdk.widgets.video.VrVideoView
-        android:id="@+id/video_view"
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/batteryIndicator1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|start"
+        android:src="@android:color/transparent"
+        android:backgroundTint="@android:color/holo_green_dark"
+        android:alpha=".7"
+        android:translationY="-40dp"
+        android:translationX="50dp"
+
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:text="75%"
+        android:elevation="16dp"
+        android:textColor="@android:color/white"
+        android:alpha=".7"
+        android:translationY="-49dp"
+        android:translationX="55dp"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/batteryIndicator2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|center"
+        android:backgroundTint="@android:color/holo_green_dark"
+        android:alpha=".7"
+        android:translationY="-40dp"
+        android:translationX="70dp"
+        android:contentDescription="3"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:text="75%"
+        android:elevation="16dp"
+        android:alpha=".7"
+        android:textColor="@android:color/white"
+        android:translationY="-49dp"
+        android:translationX="73dp"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:gravity="center">
 
-</LinearLayout>
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight=".5"
+                android:background="@android:color/black"
+                android:gravity="center">
+
+
+                <autostalker.bananaforscale.com.autostalker.Utils.MyVideoView
+                    android:id="@+id/video_view1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight=".5"
+                android:background="@android:color/black"
+                android:gravity="center">
+                <!--<android.support.design.widget.FloatingActionButton-->
+                <!--android:id="@+id/batteryIndicator2"-->
+                <!--android:contentDescription="3"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"/>-->
+
+                <autostalker.bananaforscale.com.autostalker.Utils.MyVideoView
+                    android:id="@+id/video_view2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>
