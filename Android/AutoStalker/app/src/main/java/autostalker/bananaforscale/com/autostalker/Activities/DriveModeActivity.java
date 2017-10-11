@@ -2,6 +2,7 @@ package autostalker.bananaforscale.com.autostalker.Activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.PixelFormat;
@@ -10,6 +11,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,6 +25,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.view.View.OnTouchListener;
 import android.widget.MediaController;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
@@ -37,17 +40,18 @@ import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
 import autostalker.bananaforscale.com.autostalker.Utils.MyVideoView;
 
 
-public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener  {
+public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener {
 
     private MyVideoView mVideoView1;
     private MyVideoView mVideoView2;
     private static final String TAG = "GameControllerInput";
     //private InputManager mInputManager;
     private TcpClient mTcpClient;
+    private Context context;
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_MOVE) {
+        if (event.getAction() == MotionEvent.ACTION_MOVE) {
             getDirectionPressed(event);
             return true;
         } else {
@@ -59,11 +63,13 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     @Override
     public void onInputDeviceRemoved(int deviceId) {
     }
+
     // Implementation of InputManager.InputDeviceListener.onInputDeviceAdded()
     @Override
     public void onInputDeviceAdded(int deviceId) {
 
     }
+
     // Implementation of InputManager.InputDeviceListener.onInputDeviceChanged()
     @Override
     public void onInputDeviceChanged(int deviceId) {
@@ -73,16 +79,19 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.drive_mode);
 
+            new ConnectTask().execute("");
 
-        new ConnectTask().execute("");
 
         //initJoystick();
         initViews();
     }
+
+    private boolean processing = false;
 
     public int getDirectionPressed(InputEvent event) {
 
@@ -98,34 +107,80 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             }*/
 
 //            CommonUtils.showMessage("Axis: Report", motionEvent.getX() + "|" + motionEvent.getY(), this.getContext());
-            double angle =  CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
+            double angle = CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
                     -1);
-            double power =  CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY
+            double power = CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY
                     () *
                     -1);
 
-            Log.d("Angle and power ", String.valueOf( angle) + "|" + String.valueOf( power));
+//            Log.d("Angle and power ", String.valueOf(angle) + "|" + String.valueOf(power));
 
-            if(mTcpClient.isConnected()) {
-                if(angle > 135)
-                    angle = 135;
-                if(angle < 45)
-                    angle = 45;
-
-                power = power* 100;
-                if(power > 100)
+            if (mTcpClient.isConnected()) {
+//            if (true) {
+                power = power * 100;
+                if (power > 100)
                     power = 100;
 
+                double originalAngle = angle;
+
+                if (angle <= 180) {
+
+                    if (angle > 135)
+                        angle = 135;
+                    if (angle < 45)
+                        angle = 45;
+                    if (angle >= 45 && angle <= 90) {
+                        angle -= 45;
+                        angle = 45 - angle;
+                        angle = angle * 100 / 45;
+                    } else if (angle > 90 && angle <= 135) {
+                        angle -= 90;
+                        angle = angle * 100 / 45;
+                        angle *= -1;
+                    }
+
+                } else {
+                    power *= -1;
+
+                    angle -= 180;
+
+                    if (angle > 135)
+                        angle = 135;
+                    if (angle < 45)
+                        angle = 45;
+                    if (angle >= 45 && angle <= 90) {
+                        angle -= 45;
+                        angle = 45 - angle;
+                        angle = angle * 100 / 45;
+                        angle *= -1;
+
+                    } else if (angle > 90 && angle <= 135) {
+                        angle -= 90;
+                        angle = angle * 100 / 45;
+                    }
+                }
+
+
                 Movement movement = new Movement();
-                movement.angle = (int)angle;
-                movement.power = (int)power;
+                movement.angle = (int) angle;
+                movement.power = (int) power;
 
                 String message = movement.toJson();
-                Log.d("sending",message);
+                Log.d("sending", message);
 
-                //sends the message to the server
+//                sends the message to the server
                 if (mTcpClient != null) {
                     mTcpClient.sendMessage(message);
+
+//                    new CountDownTimer(500, 500) {
+//
+//                        public void onTick(long millisUntilFinished) {
+//                        }
+//
+//                        public void onFinish() {
+//                            processing = false;
+//                        }
+//                    }.start();
                 }
             }
         }
@@ -173,31 +228,30 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             }
         });
 
-//        String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
-//        String vidAddress = "http://217.34.97.60:8081/mjpg/video.mjpg";
-        //String vidAddress = "http://192.168.0.114:8200/MediaItems/21.mp4";
-        //String vidAddress = "http://192.168.0.114:8090?action=stream";
-        //String vidAddress = "http://192.168.0.114:8081";
-//        Uri vidUri = Uri.parse(vidAddress);
+        String vidAddress = "http://192.168.0.15:8090/?action=stream";
+        Uri vidUri = Uri.parse(vidAddress);
 
-        Intent intent = new Intent();
-        intent.setType("video/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,"Select Video"),1);
+//        Intent intent = new Intent();
+//        intent.setType("video/*");
+//        intent.setAction(Intent.ACTION_GET_CONTENT);
+//        startActivityForResult(Intent.createChooser(intent, "Select Video"), 1);
 
-//        try {
-////            VideoView.Options options = new VideoView.Options();
+        try {
+//            VideoView.Options options = new VideoView.Options();
+
+//            options.inputType = VrVideoView.Options.TYPE_MONO;
+            mVideoView1.setVideoPath("http://192.168.0.15:8090/?action=stream");
+            mVideoView1.requestFocus();
+            mVideoView1.start();
 //
-////            options.inputType = VrVideoView.Options.TYPE_MONO;
-//            mVideoView.setVideoURI(vidUri);
-//            mVideoView.requestFocus();
-////            mVideoView.setMediaController( new MediaController(this));
-//            mVideoView.start();
-//            //mVrVideoView.loadVideoFromAsset("seaturtle.mp4", options);
-//        } catch( Exception /*IOException */ e ) {
-//            Log.e("myerror",e.getMessage());
-//            //Handle exception
-//        }
+//            mVideoView2.setVideoURI(vidUri);
+//            mVideoView2.requestFocus();
+//            mVideoView2.start();
+            //mVrVideoView.loadVideoFromAsset("seaturtle.mp4", options);
+        } catch (Exception /*IOException */ e) {
+            Log.e("myerror", e.getMessage());
+            //Handle exception
+        }
 
 
         // Mensaje
@@ -225,8 +279,8 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
                     mVideoView2.setVideoURI(selectedImageUri);
                     mVideoView2.start();
 
-                } catch( Exception /*IOException */ e ) {
-                    Log.e("myerror",e.getMessage());
+                } catch (Exception /*IOException */ e) {
+                    Log.e("myerror", e.getMessage());
                 }
 
             }
@@ -235,7 +289,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
     // UPDATED!
     public String getPath(Uri uri) {
-        String[] projection = { MediaStore.Video.Media.DATA };
+        String[] projection = {MediaStore.Video.Media.DATA};
         Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
         if (cursor != null) {
             // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
@@ -253,22 +307,28 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         @Override
         protected TcpClient doInBackground(String... message) {
 
+
             //we create a TCPClient object and
             mTcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
                 @Override
                 //here the messageReceived method is implemented
                 public void messageReceived(String message) {
-                    Log.d("TCP",message);
+                    Log.d("TCP", message);
                     //this method calls the onProgressUpdate
                     publishProgress(message);
                 }
 
                 @Override
                 public void connectionStablished() {
-                    Log.d("TCP","Connection stablished");
+                    Log.d("TCP", "Connection stablished");
                 }
             });
-            mTcpClient.run();
+
+            try {
+                mTcpClient.run();
+            } catch (Exception ex) {
+                Toast.makeText(context, "Error al conectar al vehiculo", Toast.LENGTH_SHORT).show();
+            }
 
             return null;
         }
@@ -277,7 +337,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
 
-            Log.d("progress","progressuptdate");
+//            Log.d("progress", "progressuptdate");
             //in the arrayList we add the messaged received from server
 //            arrayList.add(values[0]);
             // notify the adapter that the data set has changed. This means that new message received
