@@ -22,32 +22,50 @@ import android.view.InputEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.view.View.OnTouchListener;
 import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.github.niqdev.mjpeg.DisplayMode;
+import com.github.niqdev.mjpeg.Mjpeg;
+import com.github.niqdev.mjpeg.MjpegInputStream;
+import com.github.niqdev.mjpeg.MjpegSurfaceView;
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 
 //import com.example.android.apis.R;
 
+import java.io.InputStream;
+
 import TCP.TcpClient;
+import autostalker.bananaforscale.com.autostalker.Protocol.BatteryLevel;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
+import autostalker.bananaforscale.com.autostalker.Protocol.ObstacleDetected;
+import autostalker.bananaforscale.com.autostalker.Protocol.Ping;
 import autostalker.bananaforscale.com.autostalker.R;
 import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
+import autostalker.bananaforscale.com.autostalker.Utils.MyMjpegSurfaceView;
 import autostalker.bananaforscale.com.autostalker.Utils.MyVideoView;
+import rx.functions.Action1;
 
 
 public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener {
 
-    private MyVideoView mVideoView1;
-    private MyVideoView mVideoView2;
+    private MyMjpegSurfaceView mVideoView1;
+    private MyMjpegSurfaceView mVideoView2;
     private static final String TAG = "GameControllerInput";
     //private InputManager mInputManager;
     private TcpClient mTcpClient;
     private Context context;
+
+    private Button panel1;
+    private Button panel2;
+    private Button panel3;
+    private Button panel4;
+
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
@@ -76,19 +94,39 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
     }
 
+    public void setTimeout(final Runnable runnable, final int delay) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(delay);
+                    runOnUiThread(runnable);
+                    //runnable.run();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        }).start();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.drive_mode);
+        panel1 = (Button) findViewById(R.id.panel1);
+        panel2 = (Button) findViewById(R.id.panel2);
+        panel3 = (Button) findViewById(R.id.panel3);
+        panel4 = (Button) findViewById(R.id.panel4);
 
-            new ConnectTask().execute("");
 
+        new ConnectTask().execute("");
+        initViews();
 
         //initJoystick();
-        initViews();
     }
 
     private boolean processing = false;
@@ -100,11 +138,6 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
             // Use the hat axis value to find the D-pad direction
             MotionEvent motionEvent = (MotionEvent) event;
-
-            /*if(motionEvent.getY() > 0) {
-                CommonUtils.showMessage("Accion:", "Freno", this);
-                return 0;
-            }*/
 
 //            CommonUtils.showMessage("Axis: Report", motionEvent.getX() + "|" + motionEvent.getY(), this.getContext());
             double angle = CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
@@ -166,11 +199,11 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
                 movement.power = (int) power;
 
                 String message = movement.toJson();
-                Log.d("sending", message);
+//                Log.d("sending", message);
 
 //                sends the message to the server
                 if (mTcpClient != null) {
-                    mTcpClient.sendMessage(message);
+                    mTcpClient.sendMessage(message + "@");
 
 //                    new CountDownTimer(500, 500) {
 //
@@ -189,117 +222,35 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     }
 
     private void initViews() {
-        mVideoView1 = (MyVideoView) findViewById(R.id.video_view1);
-        mVideoView2 = (MyVideoView) findViewById(R.id.video_view2);
 
-        mVideoView1.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.d("VideoViewError", Integer.toString(what));
-                //logs the error you're running into
+        mVideoView1 = (MyMjpegSurfaceView) findViewById(R.id.video_view1);
+        mVideoView2 = (MyMjpegSurfaceView) findViewById(R.id.video_view2);
 
-                //You can also put a switch case here to
-                //determine what error it is running into exactly:
-                String errorString = "Media Player Error: ";
-                switch (what) {
-                    case MediaPlayer.MEDIA_ERROR_UNKNOWN: {
-                        errorString += "Unspecified media player error. ";
+        int TIMEOUT = 5;
+        Mjpeg.newInstance()
+                .open("http://192.168.0.15:8090/?action=stream", TIMEOUT)
+                .subscribe(new Action1<MjpegInputStream>() {
+                    @Override
+                    public void call(MjpegInputStream inputStream) {
+                        mVideoView1.setSource(inputStream);
+                        mVideoView1.setDisplayMode(DisplayMode.BEST_FIT);
+                        mVideoView1.showFps(true);
+
                     }
-                    case MediaPlayer.MEDIA_ERROR_SERVER_DIED: {
-                        errorString += "Media server died. ";
+                });
+
+        Mjpeg.newInstance()
+                .open("http://192.168.0.15:8090/?action=stream", TIMEOUT)
+                .subscribe(new Action1<MjpegInputStream>() {
+                    @Override
+                    public void call(MjpegInputStream inputStream) {
+                        mVideoView2.setSource(inputStream);
+                        mVideoView2.setDisplayMode(DisplayMode.BEST_FIT);
+                        mVideoView2.showFps(true);
                     }
-                }
-                switch (extra) {
-                    case MediaPlayer.MEDIA_ERROR_IO: {
-                        errorString += "File or network related operation error.";
-                    }
-                    case MediaPlayer.MEDIA_ERROR_MALFORMED: {
-                        errorString += "Bitstream is not conforming to the related coding standard or file spec.";
-                    }
-                    case MediaPlayer.MEDIA_ERROR_UNSUPPORTED: {
-                        errorString += "Bitstream is conforming to the related coding standard or file spec, but the media framework does not support the feature.";
-                    }
-                    case MediaPlayer.MEDIA_ERROR_TIMED_OUT: {
-                        errorString += "Media operation timed out.";
-                    }
-                }
-                Log.d("ERROR__", errorString);
-                return true;
-            }
-        });
-
-        String vidAddress = "http://192.168.0.15:8090/?action=stream";
-        Uri vidUri = Uri.parse(vidAddress);
-
-//        Intent intent = new Intent();
-//        intent.setType("video/*");
-//        intent.setAction(Intent.ACTION_GET_CONTENT);
-//        startActivityForResult(Intent.createChooser(intent, "Select Video"), 1);
-
-        try {
-//            VideoView.Options options = new VideoView.Options();
-
-//            options.inputType = VrVideoView.Options.TYPE_MONO;
-            mVideoView1.setVideoPath("http://192.168.0.15:8090/?action=stream");
-            mVideoView1.requestFocus();
-            mVideoView1.start();
-//
-//            mVideoView2.setVideoURI(vidUri);
-//            mVideoView2.requestFocus();
-//            mVideoView2.start();
-            //mVrVideoView.loadVideoFromAsset("seaturtle.mp4", options);
-        } catch (Exception /*IOException */ e) {
-            Log.e("myerror", e.getMessage());
-            //Handle exception
-        }
+                });
 
 
-        // Mensaje
-
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            if (requestCode == 1) {
-                Uri selectedImageUri = data.getData();
-
-                // OI FILE Manager
-//                filemanagerstring = selectedImageUri.getPath();
-
-                // MEDIA GALLERY
-                String selectedImagePath = getPath(selectedImageUri);
-                //Log.d("stringgg",selectedImagePath);
-
-                try {
-
-                    mVideoView1.setVideoURI(selectedImageUri);
-//                    mVideoView1.requestFocus();
-                    mVideoView1.start();
-                    mVideoView2.setVideoURI(selectedImageUri);
-                    mVideoView2.start();
-
-                } catch (Exception /*IOException */ e) {
-                    Log.e("myerror", e.getMessage());
-                }
-
-            }
-        }
-    }
-
-    // UPDATED!
-    public String getPath(Uri uri) {
-        String[] projection = {MediaStore.Video.Media.DATA};
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-        if (cursor != null) {
-            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
-            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
-            int column_index = cursor
-                    .getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        } else
-            return null;
     }
 
     public class ConnectTask extends AsyncTask<String, String, TcpClient> {
@@ -314,8 +265,50 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
                 //here the messageReceived method is implemented
                 public void messageReceived(String message) {
                     Log.d("TCP", message);
+
+
                     //this method calls the onProgressUpdate
                     publishProgress(message);
+
+                    String[] messages = message.split("@");
+
+//                    String msg = "{\n" +
+//                            " messageType:7,\n" +
+//                            " batteryLevel:90\n" +
+//                            "}";
+                    for (String msg :
+                            messages) {
+                        if (msg.equals(""))
+                            continue;
+
+                        Ping ping = Ping.fromJson(msg, Ping.class);
+                        switch (ping.messageType.value) {
+                            case 7:
+                                BatteryLevel batteryLevel = BatteryLevel.fromJson(msg, BatteryLevel.class);
+                                //todo some <code></code>
+                                break;
+                            case 6:
+                                ObstacleDetected obstacle = ObstacleDetected.fromJson(msg,
+                                        ObstacleDetected.class);
+
+                                if (obstacle.side == 1) {
+                                    showPanel(panel1, panel1Timer);
+                                }
+                                if (obstacle.side == 2) {
+                                    showPanel(panel2, panel2Timer);
+                                }
+                                if (obstacle.side == 3) {
+                                    showPanel(panel3, panel3Timer);
+                                }
+                                if (obstacle.side == 4) {
+                                    showPanel(panel4, panel4Timer);
+                                }
+                                break;
+
+                        }
+                    }
+
+
                 }
 
                 @Override
@@ -333,16 +326,55 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             return null;
         }
 
+        CountDownTimer panel1Timer;
+        CountDownTimer panel2Timer;
+        CountDownTimer panel3Timer;
+        CountDownTimer panel4Timer;
+
+        public void showPanel(final Button button, CountDownTimer timer) {
+
+            if (button.getVisibility() == View.VISIBLE) {
+//                timer.cancel();
+            }
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    button.setVisibility(View.VISIBLE);
+                }
+
+            });
+
+            setTimeout(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d("PANELLL" , "HACETE INVISIBLE MIERDAAAA");
+                    button.setVisibility(View.INVISIBLE);
+                }
+            },3000);
+//
+//            timer = new CountDownTimer(3000, 3000) {
+//
+//                public void onTick(long millisUntilFinished) {
+//                }
+//
+//                public void onFinish() {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            button.setVisibility(View.INVISIBLE);
+//
+//                        }
+//                    });
+//                }
+//            }.start();
+
+        }
+
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
 
-//            Log.d("progress", "progressuptdate");
-            //in the arrayList we add the messaged received from server
-//            arrayList.add(values[0]);
-            // notify the adapter that the data set has changed. This means that new message received
-            // from server was added to the list
-//            mAdapter.notifyDataSetChanged();
         }
     }
 
