@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import autostalker.bananaforscale.com.autostalker.Activities.DriveModeActivity;
+import autostalker.bananaforscale.com.autostalker.Activities.LastDriveActivity;
 import autostalker.bananaforscale.com.autostalker.Activities.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -84,9 +85,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-//                Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
+//            Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
 //                Intent myIntent = new Intent(v.getContext(),ChatClientActivity.class);
+////        myIntent.putExtra("key", value); //Optional parameters
 //                v.getContext().startActivity(myIntent);
+//
             }
         });
 
