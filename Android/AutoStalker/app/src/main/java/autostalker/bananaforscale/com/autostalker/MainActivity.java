@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import autostalker.bananaforscale.com.autostalker.Activities.DriveModeActivity;
+import autostalker.bananaforscale.com.autostalker.Activities.LastDriveActivity;
 import autostalker.bananaforscale.com.autostalker.Activities.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
         imgLastTravel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
-                Intent myIntent = new Intent(v.getContext(),ChatClientActivity.class);
+                Toast.makeText(v.getContext(),"Abriendo ultimo viaje",Toast.LENGTH_SHORT).show();
+                Intent myIntent = new Intent(v.getContext(),LastDriveActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
                 v.getContext().startActivity(myIntent);
             }

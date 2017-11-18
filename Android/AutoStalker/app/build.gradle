@@ -30,6 +30,7 @@ dependencies {
     compile 'com.android.support:design:25.3.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.10'
     compile 'com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-7'
+    compile 'commons-net:commons-net:3.3'
     testCompile 'junit:junit:4.12'
     compile project(':common')
     compile project(':commonwidget')
