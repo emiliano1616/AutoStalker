@@ -2,10 +2,17 @@ package autostalker.bananaforscale.com.autostalker.Activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.PixelFormat;
 import android.hardware.input.InputManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -15,30 +22,54 @@ import android.view.InputEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.view.View.OnTouchListener;
+import android.widget.MediaController;
+import android.widget.Toast;
+import android.widget.VideoView;
 
+import com.github.niqdev.mjpeg.DisplayMode;
+import com.github.niqdev.mjpeg.Mjpeg;
+import com.github.niqdev.mjpeg.MjpegInputStream;
+import com.github.niqdev.mjpeg.MjpegSurfaceView;
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 
 //import com.example.android.apis.R;
 
+import java.io.InputStream;
+
 import TCP.TcpClient;
+import autostalker.bananaforscale.com.autostalker.Protocol.BatteryLevel;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
+import autostalker.bananaforscale.com.autostalker.Protocol.ObstacleDetected;
+import autostalker.bananaforscale.com.autostalker.Protocol.Ping;
 import autostalker.bananaforscale.com.autostalker.R;
 import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
+import autostalker.bananaforscale.com.autostalker.Utils.MyMjpegSurfaceView;
+import autostalker.bananaforscale.com.autostalker.Utils.MyVideoView;
+import rx.functions.Action1;
 
 
-public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener  {
+public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener {
 
-    private VrVideoView mVrVideoView;
+    private MyMjpegSurfaceView mVideoView1;
+    private MyMjpegSurfaceView mVideoView2;
     private static final String TAG = "GameControllerInput";
     //private InputManager mInputManager;
     private TcpClient mTcpClient;
+    private Context context;
+
+    private Button panel1;
+    private Button panel2;
+    private Button panel3;
+    private Button panel4;
+
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_MOVE) {
+        if (event.getAction() == MotionEvent.ACTION_MOVE) {
             getDirectionPressed(event);
             return true;
         } else {
@@ -50,30 +81,55 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     @Override
     public void onInputDeviceRemoved(int deviceId) {
     }
+
     // Implementation of InputManager.InputDeviceListener.onInputDeviceAdded()
     @Override
     public void onInputDeviceAdded(int deviceId) {
 
     }
+
     // Implementation of InputManager.InputDeviceListener.onInputDeviceChanged()
     @Override
     public void onInputDeviceChanged(int deviceId) {
 
     }
 
+    public void setTimeout(final Runnable runnable, final int delay) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(delay);
+                    runOnUiThread(runnable);
+                    //runnable.run();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        }).start();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.drive_mode);
+        panel1 = (Button) findViewById(R.id.panel1);
+        panel2 = (Button) findViewById(R.id.panel2);
+        panel3 = (Button) findViewById(R.id.panel3);
+        panel4 = (Button) findViewById(R.id.panel4);
 
 
         new ConnectTask().execute("");
+        initViews();
 
         //initJoystick();
-        initViews();
     }
+
+    private boolean processing = false;
 
     public int getDirectionPressed(InputEvent event) {
 
@@ -83,40 +139,81 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             // Use the hat axis value to find the D-pad direction
             MotionEvent motionEvent = (MotionEvent) event;
 
-            /*if(motionEvent.getY() > 0) {
-                CommonUtils.showMessage("Accion:", "Freno", this);
-                return 0;
-            }*/
-
 //            CommonUtils.showMessage("Axis: Report", motionEvent.getX() + "|" + motionEvent.getY(), this.getContext());
-            double angle =  CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
+            double angle = CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
                     -1);
-            double power =  CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY
+            double power = CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY
                     () *
                     -1);
 
-            Log.d("Angle and power ", String.valueOf( angle) + "|" + String.valueOf( power));
+//            Log.d("Angle and power ", String.valueOf(angle) + "|" + String.valueOf(power));
 
-            if(mTcpClient.isConnected()) {
-                if(angle > 135)
-                    angle = 135;
-                if(angle < 45)
-                    angle = 45;
-
-                power = power* 100;
-                if(power > 100)
+            if (mTcpClient.isConnected()) {
+//            if (true) {
+                power = power * 100;
+                if (power > 100)
                     power = 100;
 
+                double originalAngle = angle;
+
+                if (angle <= 180) {
+
+                    if (angle > 135)
+                        angle = 135;
+                    if (angle < 45)
+                        angle = 45;
+                    if (angle >= 45 && angle <= 90) {
+                        angle -= 45;
+                        angle = 45 - angle;
+                        angle = angle * 100 / 45;
+                    } else if (angle > 90 && angle <= 135) {
+                        angle -= 90;
+                        angle = angle * 100 / 45;
+                        angle *= -1;
+                    }
+
+                } else {
+                    power *= -1;
+
+                    angle -= 180;
+
+                    if (angle > 135)
+                        angle = 135;
+                    if (angle < 45)
+                        angle = 45;
+                    if (angle >= 45 && angle <= 90) {
+                        angle -= 45;
+                        angle = 45 - angle;
+                        angle = angle * 100 / 45;
+                        angle *= -1;
+
+                    } else if (angle > 90 && angle <= 135) {
+                        angle -= 90;
+                        angle = angle * 100 / 45;
+                    }
+                }
+
+
                 Movement movement = new Movement();
-                movement.angle = (int)angle;
-                movement.power = (int)power;
+                movement.angle = (int) angle;
+                movement.power = (int) power;
 
                 String message = movement.toJson();
-                Log.d("sending",message);
+//                Log.d("sending", message);
 
-                //sends the message to the server
+//                sends the message to the server
                 if (mTcpClient != null) {
-                    mTcpClient.sendMessage(message);
+                    mTcpClient.sendMessage(message + "@");
+
+//                    new CountDownTimer(500, 500) {
+//
+//                        public void onTick(long millisUntilFinished) {
+//                        }
+//
+//                        public void onFinish() {
+//                            processing = false;
+//                        }
+//                    }.start();
                 }
             }
         }
@@ -125,24 +222,34 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     }
 
     private void initViews() {
-        mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
 
-        String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
-        //String vidAddress = "http://192.168.0.114:8200/MediaItems/21.mp4";
-        //String vidAddress = "http://192.168.0.114:8090?action=stream";
-        //String vidAddress = "http://192.168.0.114:8081";
-        //Uri vidUri = Uri.parse(vidAddress);
+        mVideoView1 = (MyMjpegSurfaceView) findViewById(R.id.video_view1);
+        mVideoView2 = (MyMjpegSurfaceView) findViewById(R.id.video_view2);
 
-        try {
-            VrVideoView.Options options = new VrVideoView.Options();
-            options.inputType = VrVideoView.Options.TYPE_MONO;
-            //mVrVideoView.loadVideo(vidUri, options);
-            //mVrVideoView.loadVideoFromAsset("seaturtle.mp4", options);
-        } catch( Exception /*IOException */ e ) {
-            //Handle exception
-        }
+        int TIMEOUT = 5;
+        Mjpeg.newInstance()
+                .open("http://192.168.0.15:8090/?action=stream", TIMEOUT)
+                .subscribe(new Action1<MjpegInputStream>() {
+                    @Override
+                    public void call(MjpegInputStream inputStream) {
+                        mVideoView1.setSource(inputStream);
+                        mVideoView1.setDisplayMode(DisplayMode.BEST_FIT);
+                        mVideoView1.showFps(true);
 
-        // Mensaje
+                    }
+                });
+
+        Mjpeg.newInstance()
+                .open("http://192.168.0.15:8090/?action=stream", TIMEOUT)
+                .subscribe(new Action1<MjpegInputStream>() {
+                    @Override
+                    public void call(MjpegInputStream inputStream) {
+                        mVideoView2.setSource(inputStream);
+                        mVideoView2.setDisplayMode(DisplayMode.BEST_FIT);
+                        mVideoView2.showFps(true);
+                    }
+                });
+
 
     }
 
@@ -151,36 +258,123 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         @Override
         protected TcpClient doInBackground(String... message) {
 
+
             //we create a TCPClient object and
             mTcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
                 @Override
                 //here the messageReceived method is implemented
                 public void messageReceived(String message) {
-                    Log.d("TCP",message);
+                    Log.d("TCP", message);
+
+
                     //this method calls the onProgressUpdate
                     publishProgress(message);
+
+                    String[] messages = message.split("@");
+
+//                    String msg = "{\n" +
+//                            " messageType:7,\n" +
+//                            " batteryLevel:90\n" +
+//                            "}";
+                    for (String msg :
+                            messages) {
+                        if (msg.equals(""))
+                            continue;
+
+                        Ping ping = Ping.fromJson(msg, Ping.class);
+                        switch (ping.messageType.value) {
+                            case 7:
+                                BatteryLevel batteryLevel = BatteryLevel.fromJson(msg, BatteryLevel.class);
+                                //todo some <code></code>
+                                break;
+                            case 6:
+                                ObstacleDetected obstacle = ObstacleDetected.fromJson(msg,
+                                        ObstacleDetected.class);
+
+                                if (obstacle.side == 1) {
+                                    showPanel(panel1, panel1Timer);
+                                }
+                                if (obstacle.side == 2) {
+                                    showPanel(panel2, panel2Timer);
+                                }
+                                if (obstacle.side == 3) {
+                                    showPanel(panel3, panel3Timer);
+                                }
+                                if (obstacle.side == 4) {
+                                    showPanel(panel4, panel4Timer);
+                                }
+                                break;
+
+                        }
+                    }
+
+
                 }
 
                 @Override
                 public void connectionStablished() {
-                    Log.d("TCP","Connection stablished");
+                    Log.d("TCP", "Connection stablished");
                 }
             });
-            mTcpClient.run();
+
+            try {
+                mTcpClient.run();
+            } catch (Exception ex) {
+                Toast.makeText(context, "Error al conectar al vehiculo", Toast.LENGTH_SHORT).show();
+            }
 
             return null;
+        }
+
+        CountDownTimer panel1Timer;
+        CountDownTimer panel2Timer;
+        CountDownTimer panel3Timer;
+        CountDownTimer panel4Timer;
+
+        public void showPanel(final Button button, CountDownTimer timer) {
+
+            if (button.getVisibility() == View.VISIBLE) {
+//                timer.cancel();
+            }
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    button.setVisibility(View.VISIBLE);
+                }
+
+            });
+
+            setTimeout(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d("PANELLL" , "HACETE INVISIBLE MIERDAAAA");
+                    button.setVisibility(View.INVISIBLE);
+                }
+            },3000);
+//
+//            timer = new CountDownTimer(3000, 3000) {
+//
+//                public void onTick(long millisUntilFinished) {
+//                }
+//
+//                public void onFinish() {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            button.setVisibility(View.INVISIBLE);
+//
+//                        }
+//                    });
+//                }
+//            }.start();
+
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
 
-            Log.d("progress","progressuptdate");
-            //in the arrayList we add the messaged received from server
-//            arrayList.add(values[0]);
-            // notify the adapter that the data set has changed. This means that new message received
-            // from server was added to the list
-//            mAdapter.notifyDataSetChanged();
         }
     }
 

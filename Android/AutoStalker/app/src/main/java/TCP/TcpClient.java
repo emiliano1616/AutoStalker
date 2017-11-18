@@ -1,6 +1,7 @@
 package TCP;
 
 import android.util.Log;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -12,7 +13,7 @@ import java.net.Socket;
 public class TcpClient {
 
     public static final String SERVER_IP = "192.168.0.15"; //your computer IP address
-//    public static final String SERVER_IP = "10.0.2.2"; //your computer IP address
+    //    public static final String SERVER_IP = "10.0.2.2"; //your computer IP address
     public static final int SERVER_PORT = 5555;
     // message to send to the server
     private String mServerMessage;
@@ -55,7 +56,7 @@ public class TcpClient {
     public void stopClient() {
 
         // send mesage that we are closing the connection
-        sendMessage(Constants.CLOSED_CONNECTION+"Kazy");
+        sendMessage(Constants.CLOSED_CONNECTION + "Kazy");
 
         mRun = false;
         mConnectionStablished = false;
@@ -81,10 +82,11 @@ public class TcpClient {
             Log.d("TCP Client", "C: Connecting...");
 
             //create a socket to make the connection with the server
-
-            Socket socket = new Socket(serverAddr, SERVER_PORT);
+            Socket socket = null;
 
             try {
+                socket = new Socket(serverAddr, SERVER_PORT);
+
                 mConnectionStablished = true;
                 mMessageListener.connectionStablished();
                 Log.d("TCP Client", "connection successfull");
@@ -120,7 +122,8 @@ public class TcpClient {
             } finally {
                 //the socket must be closed. It is not possible to reconnect to this socket
                 // after it is closed, which means a new socket instance has to be created.
-                socket.close();
+                if (socket != null)
+                    socket.close();
             }
 
         } catch (Exception e) {
@@ -135,6 +138,7 @@ public class TcpClient {
     //class at on asynckTask doInBackground
     public interface OnMessageReceived {
         public void messageReceived(String message);
+
         public void connectionStablished();
     }
 }

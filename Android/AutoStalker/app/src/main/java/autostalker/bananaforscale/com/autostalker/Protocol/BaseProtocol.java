@@ -54,6 +54,10 @@ class messageTypeDeserializer implements JsonDeserializer<Enum.messageType> {
         if ( Enum.messageType.BatteryLevel.value == json.getAsInt()) {
             return Enum.messageType.BatteryLevel;
         }
+
+        if( Enum.messageType.ObstacleDetected.value == json.getAsInt()) {
+            return Enum.messageType.ObstacleDetected;
+        }
 //        if ( Enum.messageType.Movement.value == json.getAsInt()) {
 //            return Enum.messageType.Movement;
 //        }
