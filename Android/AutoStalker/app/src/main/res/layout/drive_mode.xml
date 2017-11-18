@@ -9,18 +9,18 @@
              android:gravity="center">
 
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/batteryIndicator1"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom|start"
-        android:alpha=".7"
-        android:backgroundTint="@android:color/holo_green_dark"
-        android:src="@android:color/transparent"
-        android:translationX="50dp"
-        android:translationY="-40dp"
+    <!--<android.support.design.widget.FloatingActionButton-->
+        <!--android:id="@+id/batteryIndicator1"-->
+        <!--android:layout_width="40dp"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:layout_gravity="bottom|start"-->
+        <!--android:alpha=".7"-->
+        <!--android:backgroundTint="@android:color/holo_green_dark"-->
+        <!--android:src="@android:color/transparent"-->
+        <!--android:translationX="50dp"-->
+        <!--android:translationY="-40dp"-->
 
-        />
+        <!--/>-->
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,17 +34,17 @@
         android:translationX="55dp"
         android:translationY="-49dp"/>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/batteryIndicator2"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom|center"
-        android:alpha=".7"
-        android:backgroundTint="@android:color/holo_green_dark"
-        android:contentDescription="3"
-        android:translationX="70dp"
-        android:translationY="-40dp"
-        />
+    <!--<android.support.design.widget.FloatingActionButton-->
+        <!--android:id="@+id/batteryIndicator2"-->
+        <!--android:layout_width="40dp"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:layout_gravity="bottom|center"-->
+        <!--android:alpha=".7"-->
+        <!--android:backgroundTint="@android:color/holo_green_dark"-->
+        <!--android:contentDescription="3"-->
+        <!--android:translationX="70dp"-->
+        <!--android:translationY="-40dp"-->
+        <!--/>-->
 
     <TextView
         android:layout_width="wrap_content"

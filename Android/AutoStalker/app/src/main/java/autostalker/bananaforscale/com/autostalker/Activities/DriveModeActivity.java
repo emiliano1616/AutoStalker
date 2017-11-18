@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.PixelFormat;
 import android.hardware.input.InputManager;
@@ -19,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.InputEvent;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -41,6 +43,7 @@ import com.google.vr.sdk.widgets.video.VrVideoView;
 import java.io.InputStream;
 
 import TCP.TcpClient;
+import autostalker.bananaforscale.com.autostalker.Constants;
 import autostalker.bananaforscale.com.autostalker.Protocol.BatteryLevel;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
 import autostalker.bananaforscale.com.autostalker.Protocol.ObstacleDetected;
@@ -49,7 +52,9 @@ import autostalker.bananaforscale.com.autostalker.R;
 import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
 import autostalker.bananaforscale.com.autostalker.Utils.MyMjpegSurfaceView;
 import autostalker.bananaforscale.com.autostalker.Utils.MyVideoView;
+import rx.Observable;
 import rx.functions.Action1;
+import rx.plugins.RxJavaErrorHandler;
 
 
 public class DriveModeActivity extends Activity implements InputManager.InputDeviceListener {
@@ -65,6 +70,11 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     private Button panel2;
     private Button panel3;
     private Button panel4;
+    private float offsetAngle;
+    private int returnButton;
+
+    SharedPreferences settings ;
+    SharedPreferences.Editor editor;
 
 
     @Override
@@ -114,6 +124,11 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         super.onCreate(savedInstanceState);
         context = this;
 
+        settings = getSharedPreferences("settings", Context.MODE_PRIVATE);
+        offsetAngle = settings.getFloat(Constants.CONTROLLER_SETTINGS_UP,0);
+        returnButton = settings.getInt(Constants.CONTROLLER_SETTINGS_RETURN,-1);
+
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.drive_mode);
@@ -128,6 +143,68 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
         //initJoystick();
     }
+
+
+    private void ProcessKeyDown(int keyCode) {
+
+        Log.d("keyCode",String.valueOf(keyCode));
+        Log.d("return button",String.valueOf(returnButton));
+        Log.d("angleoffset",String.valueOf(offsetAngle));
+
+        if(keyCode == returnButton) {
+            Log.d("retu","Returnbutton pressed");
+        }
+
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Handle DPad keys and fire button on initial down but not on
+        // auto-repeat.
+        Log.d("aver","onKeyDown");
+
+//        int deviceId = event.getDeviceId();
+//        if (deviceId != -1) {
+
+//        Log.d("aver","event.getRepeatCount() " + String.valueOf(event.getRepeatCount()));
+
+        if (event.getRepeatCount() == 0) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_BACK:
+                    super.onBackPressed();
+                    break;
+                default:
+//                    Toast.makeText(this,"otra cosa: " + String.valueOf(keyCode),Toast.LENGTH_SHORT).show();
+                    ProcessKeyDown(keyCode);
+
+                    //                    if (isFireKey(keyCode)) {
+                    //                        fire();
+                    //                        handled = true;
+                    //                    }
+                    break;
+            }
+            return true;
+        }
+
+
+//        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Log.d("aver","onKeyUp");
+
+        int deviceId = event.getDeviceId();
+        if (deviceId != -1) {
+            //Do stuff
+            return true;
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
 
     private boolean processing = false;
 
@@ -148,7 +225,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
 //            Log.d("Angle and power ", String.valueOf(angle) + "|" + String.valueOf(power));
 
-            if (mTcpClient.isConnected()) {
+            if (mTcpClient != null && mTcpClient.isConnected()) {
 //            if (true) {
                 power = power * 100;
                 if (power > 100)
@@ -227,20 +304,32 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         mVideoView2 = (MyMjpegSurfaceView) findViewById(R.id.video_view2);
 
         int TIMEOUT = 5;
-        Mjpeg.newInstance()
-                .open("http://192.168.0.15:8090/?action=stream", TIMEOUT)
-                .subscribe(new Action1<MjpegInputStream>() {
-                    @Override
-                    public void call(MjpegInputStream inputStream) {
-                        mVideoView1.setSource(inputStream);
-                        mVideoView1.setDisplayMode(DisplayMode.BEST_FIT);
-                        mVideoView1.showFps(true);
 
-                    }
-                });
+
+        Action1<Throwable> onError = new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+//                    Log.e("Error",throwable.getMessage());
+            }
+        };
+
+        Observable<MjpegInputStream> toSubscribe = Mjpeg.newInstance()
+                .open("http://192.168.1.15:8090/?action=stream", TIMEOUT);
+
+        toSubscribe.subscribe(new Action1<MjpegInputStream>() {
+
+            @Override
+            public void call(MjpegInputStream inputStream) {
+
+                mVideoView1.setSource(inputStream);
+                mVideoView1.setDisplayMode(DisplayMode.BEST_FIT);
+                mVideoView1.showFps(true);
+            }
+        }, onError);
+
 
         Mjpeg.newInstance()
-                .open("http://192.168.0.15:8090/?action=stream", TIMEOUT)
+                .open("http://192.168.1.15:8090/?action=stream", TIMEOUT)
                 .subscribe(new Action1<MjpegInputStream>() {
                     @Override
                     public void call(MjpegInputStream inputStream) {
@@ -248,7 +337,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
                         mVideoView2.setDisplayMode(DisplayMode.BEST_FIT);
                         mVideoView2.showFps(true);
                     }
-                });
+                }, onError);
 
 
     }
@@ -348,10 +437,10 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             setTimeout(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d("PANELLL" , "HACETE INVISIBLE MIERDAAAA");
+                    Log.d("PANELLL", "HACETE INVISIBLE MIERDAAAA");
                     button.setVisibility(View.INVISIBLE);
                 }
-            },3000);
+            }, 3000);
 //
 //            timer = new CountDownTimer(3000, 3000) {
 //

@@ -1,15 +1,21 @@
 package autostalker.bananaforscale.com.autostalker;
 
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,12 +58,39 @@ public class MainActivity extends AppCompatActivity {
         imgLastTravel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
-                Intent myIntent = new Intent(v.getContext(),ChatClientActivity.class);
-//        myIntent.putExtra("key", value); //Optional parameters
-                v.getContext().startActivity(myIntent);
+
+                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Should we show an explanation?
+                    if (shouldShowRequestPermissionRationale(
+                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        // Explain to the user why we need to read the contacts
+                    }
+
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            1);
+
+                    // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+                    // app-defined int constant that should be quite unique
+
+                    return;
+                }
+
+                Intent intent = new Intent();
+                intent.setType("video/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent,"Select Video"),1);
+
+
+
+//                Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
+//                Intent myIntent = new Intent(v.getContext(),ChatClientActivity.class);
+//                v.getContext().startActivity(myIntent);
             }
         });
+
+
 
         ImageView imgSettings = (ImageView) findViewById(R.id.imgSettings);
 
@@ -88,6 +121,61 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 1) {
+                Uri selectedImageUri = data.getData();
+
+                // MEDIA GALLERY
+//                 String selectedImagePath = getPath(selectedImageUri);
+
+                Log.d("stringgg",selectedImageUri.toString());
+
+
+                Intent shareIntent = new Intent(
+                        android.content.Intent.ACTION_SEND);
+                shareIntent.setType("video/*");
+                shareIntent.putExtra(
+                        android.content.Intent.EXTRA_SUBJECT, "Autostalker");
+                shareIntent.putExtra(
+                        android.content.Intent.EXTRA_TITLE, "Autostalker");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, selectedImageUri);
+                shareIntent
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+                this.startActivity(Intent.createChooser(shareIntent,
+                        selectedImageUri.toString()));
+
+
+                // MEDIA GALLERY
+//                String selectedImagePath = getPath(selectedImageUri);
+//                Log.d("selectedImagePath",selectedImagePath);
+
+//                if (selectedImagePath != null) {
+//
+//
+//                }
+            }
+        }
+    }
+
+
+    // UPDATED!
+    public String getPath(Uri uri) {
+        String[] projection = { MediaStore.Video.Media.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
+            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } else
+            return null;
+    }
+
+
 
     public static Intent newFacebookIntent(PackageManager pm, String url) {
         Uri uri = Uri.parse(url);
