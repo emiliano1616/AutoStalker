@@ -6,6 +6,7 @@ package autostalker.bananaforscale.com.autostalker.Protocol;
 
 public  class Enum {
     public static enum messageType{
+        StartDriveMode(0),
         Movement(1),
         Settings(2),
         ReturnCommand(3),

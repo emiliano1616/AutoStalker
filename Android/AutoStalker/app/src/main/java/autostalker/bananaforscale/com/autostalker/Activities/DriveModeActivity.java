@@ -48,6 +48,7 @@ import autostalker.bananaforscale.com.autostalker.Protocol.BatteryLevel;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
 import autostalker.bananaforscale.com.autostalker.Protocol.ObstacleDetected;
 import autostalker.bananaforscale.com.autostalker.Protocol.Ping;
+import autostalker.bananaforscale.com.autostalker.Protocol.StartDriveMode;
 import autostalker.bananaforscale.com.autostalker.R;
 import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
 import autostalker.bananaforscale.com.autostalker.Utils.MyMjpegSurfaceView;
@@ -73,7 +74,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     private float offsetAngle;
     private int returnButton;
 
-    SharedPreferences settings ;
+    SharedPreferences settings;
     SharedPreferences.Editor editor;
 
 
@@ -125,8 +126,8 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         context = this;
 
         settings = getSharedPreferences("settings", Context.MODE_PRIVATE);
-        offsetAngle = settings.getFloat(Constants.CONTROLLER_SETTINGS_UP,0);
-        returnButton = settings.getInt(Constants.CONTROLLER_SETTINGS_RETURN,-1);
+        offsetAngle = settings.getFloat(Constants.CONTROLLER_SETTINGS_UP, 0);
+        returnButton = settings.getInt(Constants.CONTROLLER_SETTINGS_RETURN, -1);
 
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -139,6 +140,26 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
 
         new ConnectTask().execute("");
+
+        StartDriveMode message = new StartDriveMode();
+        String messageStr = message.toJson();
+
+        while (mTcpClient == null || !mTcpClient.isConnected()) {
+            Log.d("start", "mensaje 0 NOO enviado");
+
+
+            try{
+                Thread.sleep(300);
+
+            } catch (InterruptedException ex) {
+                Log.e("error",ex.getMessage());
+            }
+        }
+
+        mTcpClient.sendMessage(messageStr + "@");
+
+        Log.d("start", "mensaje 0 enviado");
+
         initViews();
 
         //initJoystick();
@@ -147,12 +168,12 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
     private void ProcessKeyDown(int keyCode) {
 
-        Log.d("keyCode",String.valueOf(keyCode));
-        Log.d("return button",String.valueOf(returnButton));
-        Log.d("angleoffset",String.valueOf(offsetAngle));
+        Log.d("keyCode", String.valueOf(keyCode));
+        Log.d("return button", String.valueOf(returnButton));
+        Log.d("angleoffset", String.valueOf(offsetAngle));
 
-        if(keyCode == returnButton) {
-            Log.d("retu","Returnbutton pressed");
+        if (keyCode == returnButton) {
+            Log.d("retu", "Returnbutton pressed");
         }
 
     }
@@ -161,7 +182,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Handle DPad keys and fire button on initial down but not on
         // auto-repeat.
-        Log.d("aver","onKeyDown");
+        Log.d("aver", "onKeyDown");
 
 //        int deviceId = event.getDeviceId();
 //        if (deviceId != -1) {
@@ -194,7 +215,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Log.d("aver","onKeyUp");
+        Log.d("aver", "onKeyUp");
 
         int deviceId = event.getDeviceId();
         if (deviceId != -1) {
@@ -372,6 +393,8 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
                         Ping ping = Ping.fromJson(msg, Ping.class);
                         switch (ping.messageType.value) {
+                            case 0:
+                                break;
                             case 7:
                                 BatteryLevel batteryLevel = BatteryLevel.fromJson(msg, BatteryLevel.class);
                                 //todo some <code></code>
@@ -437,7 +460,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
             setTimeout(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d("PANELLL", "HACETE INVISIBLE MIERDAAAA");
+//                    Log.d("PANELLL", "HACETE INVISIBLE MIERDAAAA");
                     button.setVisibility(View.INVISIBLE);
                 }
             }, 3000);

@@ -13,6 +13,7 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import autostalker.bananaforscale.com.autostalker.Activities.DriveModeActivity;
+import autostalker.bananaforscale.com.autostalker.Activities.FragmentDialog;
 import autostalker.bananaforscale.com.autostalker.Activities.LastDriveActivity;
 import autostalker.bananaforscale.com.autostalker.Activities.SettingsActivity;
 
@@ -44,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
         imgCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(),"Abriendo modo conduccion",Toast.LENGTH_SHORT).show();
-                Intent myIntent = new Intent(v.getContext(),DriveModeActivity.class);
+                Toast.makeText(v.getContext(), "Abriendo modo conduccion", Toast.LENGTH_SHORT).show();
+                Intent myIntent = new Intent(v.getContext(), DriveModeActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
                 v.getContext().startActivity(myIntent);
             }
@@ -59,40 +61,36 @@ public class MainActivity extends AppCompatActivity {
         imgLastTravel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-                    // Should we show an explanation?
-                    if (shouldShowRequestPermissionRationale(
-                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        // Explain to the user why we need to read the contacts
-                    }
-
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            1);
-
-                    // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
-                    // app-defined int constant that should be quite unique
-
-                    return;
-                }
-
-                Intent intent = new Intent();
-                intent.setType("video/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent,"Select Video"),1);
-
-
-
-//            Toast.makeText(v.getContext(),"Abriendo chat",Toast.LENGTH_SHORT).show();
-//                Intent myIntent = new Intent(v.getContext(),ChatClientActivity.class);
-////        myIntent.putExtra("key", value); //Optional parameters
-//                v.getContext().startActivity(myIntent);
 //
+//                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+//                        != PackageManager.PERMISSION_GRANTED) {
+//
+//                    // Should we show an explanation?
+//                    if (shouldShowRequestPermissionRationale(
+//                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
+//                        // Explain to the user why we need to read the contacts
+//                    }
+//
+//                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+//                            1);
+//
+//                    // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+//                    // app-defined int constant that should be quite unique
+//
+//                    return;
+//                }
+//
+//                Intent intent = new Intent();
+//                intent.setType("video/*");
+//                intent.setAction(Intent.ACTION_GET_CONTENT);
+//                startActivityForResult(Intent.createChooser(intent, "Select Video"), 1);
+                FragmentManager manager = getSupportFragmentManager();
+            new FragmentDialog().show(manager, "Ultimo viaje");
+
+
+
             }
         });
-
 
 
         ImageView imgSettings = (ImageView) findViewById(R.id.imgSettings);
@@ -101,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent myIntent = new Intent(v.getContext(),SettingsActivity.class);
+                Intent myIntent = new Intent(v.getContext(), SettingsActivity.class);
                 v.getContext().startActivity(myIntent);
             }
         });
@@ -109,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         imgHelp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent browserIntent = newFacebookIntent(v.getContext().getPackageManager(),"https://www.facebook.com/proyectoautostalker/");
+                Intent browserIntent = newFacebookIntent(v.getContext().getPackageManager(), "https://www.facebook.com/proyectoautostalker/");
                 startActivity(browserIntent);
             }
         });
@@ -133,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 // MEDIA GALLERY
 //                 String selectedImagePath = getPath(selectedImageUri);
 
-                Log.d("stringgg",selectedImageUri.toString());
+                Log.d("stringgg", selectedImageUri.toString());
 
 
                 Intent shareIntent = new Intent(
@@ -165,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
     // UPDATED!
     public String getPath(Uri uri) {
-        String[] projection = { MediaStore.Video.Media.DATA };
+        String[] projection = {MediaStore.Video.Media.DATA};
         Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
         if (cursor != null) {
             // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
@@ -177,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
         } else
             return null;
     }
-
 
 
     public static Intent newFacebookIntent(PackageManager pm, String url) {
@@ -211,22 +208,22 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_settings) {
             return true;
-        } else if(id == R.id.action_test_bluetooth){
-            Toast.makeText(this,"Abriendo bluetooth",Toast.LENGTH_SHORT).show();
-            Intent myIntent = new Intent(this,TestBluetoothActivity.class);
+        } else if (id == R.id.action_test_bluetooth) {
+            Toast.makeText(this, "Abriendo bluetooth", Toast.LENGTH_SHORT).show();
+            Intent myIntent = new Intent(this, TestBluetoothActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
             this.startActivity(myIntent);
-        }else if (id == R.id.action_chat) {
-            Toast.makeText(this,"Abriendo chat",Toast.LENGTH_SHORT).show();
-            Intent myIntent = new Intent(this,ChatClientActivity.class);
+        } else if (id == R.id.action_chat) {
+            Toast.makeText(this, "Abriendo chat", Toast.LENGTH_SHORT).show();
+            Intent myIntent = new Intent(this, ChatClientActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
             this.startActivity(myIntent);
-        }else if (id == R.id.action_server) {
-        Toast.makeText(this,"Abriendo chat",Toast.LENGTH_SHORT).show();
-        Intent myIntent = new Intent(this,ServerTestActivity.class);
+        } else if (id == R.id.action_server) {
+            Toast.makeText(this, "Abriendo chat", Toast.LENGTH_SHORT).show();
+            Intent myIntent = new Intent(this, ServerTestActivity.class);
 //        myIntent.putExtra("key", value); //Optional parameters
-        this.startActivity(myIntent);
-    }
+            this.startActivity(myIntent);
+        }
 
 
         return super.onOptionsItemSelected(item);

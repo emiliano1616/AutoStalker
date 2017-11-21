@@ -2,6 +2,8 @@ package autostalker.bananaforscale.com.autostalker.Activities;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +24,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import TCP.TcpClient;
 import autostalker.bananaforscale.com.autostalker.Protocol.Movement;
@@ -31,113 +36,43 @@ import autostalker.bananaforscale.com.autostalker.Utils.CommonUtils;
 //import com.example.android.apis.R;
 
 
-public class LastDriveActivity extends Activity implements InputManager.InputDeviceListener  {
+public class LastDriveActivity extends Activity   {
 
+    private Uri path;
     private VrVideoView mVrVideoView;
     private static final String TAG = "GameControllerInput";
     //private InputManager mInputManager;
     private TcpClient mTcpClient;
 
     String lastDriveFileName = "final.mp4";
-    String ip_raspberry = "192.168.1.108";
-
-    @Override
-    public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_MOVE) {
-            getDirectionPressed(event);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // Implementation of InputManager.InputDeviceListener.onInputDeviceRemoved()
-    @Override
-    public void onInputDeviceRemoved(int deviceId) {
-    }
-    // Implementation of InputManager.InputDeviceListener.onInputDeviceAdded()
-    @Override
-    public void onInputDeviceAdded(int deviceId) {
-
-    }
-    // Implementation of InputManager.InputDeviceListener.onInputDeviceChanged()
-    @Override
-    public void onInputDeviceChanged(int deviceId) {
-
-    }
+    String ip_raspberry = "192.168.1.15";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.drive_mode);
+        setContentView(R.layout.last_drive_mode);
 
         //new ConnectTask().execute("");
 
-        //initJoystick();
-        //initViews();
+//        initViews();
         try {
             downloadAndSaveFile(ip_raspberry, "pi", "raspberry");
+
+
+
             initViews();
         }catch (Exception ex) {
         }
-    }
-
-    public int getDirectionPressed(InputEvent event) {
-
-        // If the input event is a MotionEvent, check its hat axis values.
-        if (event instanceof MotionEvent) {
-
-            // Use the hat axis value to find the D-pad direction
-            MotionEvent motionEvent = (MotionEvent) event;
-
-            /*if(motionEvent.getY() > 0) {
-                CommonUtils.showMessage("Accion:", "Freno", this);
-                return 0;
-            }*/
-
-//            CommonUtils.showMessage("Axis: Report", motionEvent.getX() + "|" + motionEvent.getY(), this.getContext());
-            double angle =  CommonUtils.getAngleByXYAxis(motionEvent.getX(), motionEvent.getY() *
-                    -1);
-            double power =  CommonUtils.getPowerPressByXYAxis(motionEvent.getX(), motionEvent.getY
-                    () *
-                    -1);
-
-            Log.d("Angle and power ", String.valueOf( angle) + "|" + String.valueOf( power));
-
-            if(mTcpClient.isConnected()) {
-                if(angle > 135)
-                    angle = 135;
-                if(angle < 45)
-                    angle = 45;
-
-                power = power* 100;
-                if(power > 100)
-                    power = 100;
-
-                Movement movement = new Movement();
-                movement.angle = (int)angle;
-                movement.power = (int)power;
-
-                String message = movement.toJson();
-                Log.d("sending",message);
-
-                //sends the message to the server
-                if (mTcpClient != null) {
-                    mTcpClient.sendMessage(message);
-                }
-            }
-        }
-
-        return 0; //directionPressed;
     }
 
     private void initViews() {
         mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
 
         //String vidAddress = "https://archive.org/download/ksnn_compilation_master_the_internet/ksnn_compilation_master_the_internet_512kb.mp4";
-        String vidAddress = getFilesDir().toString() + "/Autostalker/" + lastDriveFileName;
+        String vidAddress = path.toString();//getFilesDir().toString() + "/Autostalker/" +
+        // lastDriveFileName;
         //String vidAddress = "http://192.168.0.114:8200/MediaItems/21.mp4";
         //String vidAddress = "http://192.168.0.15:8090/?action=stream";
         //String vidAddress = "http://192.168.0.114:8081";
@@ -159,42 +94,19 @@ public class LastDriveActivity extends Activity implements InputManager.InputDev
 
     }
 
-    public class ConnectTask extends AsyncTask<String, String, TcpClient> {
 
-        @Override
-        protected TcpClient doInBackground(String... message) {
+    public File createImageFile(String suffix) throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = suffix + "_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                "." + suffix,         /* suffix */
+                storageDir      /* directory */
+        );
 
-            //we create a TCPClient object and
-            mTcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
-                @Override
-                //here the messageReceived method is implemented
-                public void messageReceived(String message) {
-                    Log.d("TCP",message);
-                    //this method calls the onProgressUpdate
-                    publishProgress(message);
-                }
-
-                @Override
-                public void connectionStablished() {
-                    Log.d("TCP","Connection established");
-                }
-            });
-            mTcpClient.run();
-
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-
-            Log.d("progress","progressuptdate");
-            //in the arrayList we add the messaged received from server
-//            arrayList.add(values[0]);
-            // notify the adapter that the data set has changed. This means that new message received
-            // from server was added to the list
-//            mAdapter.notifyDataSetChanged();
-        }
+        return image;
     }
 
     private Boolean downloadAndSaveFile(String server, /*int portNumber,*/
@@ -220,25 +132,47 @@ public class LastDriveActivity extends Activity implements InputManager.InputDev
             try {
                 //String lastDriveFile = Environment.getExternalStorageDirectory()+ "/lastAutoStalkerDrive.mp4";
 
-                String intStorageDirectory = getFilesDir().toString();
+                File fileContent = createImageFile("mp4");
 
-                File public_file = new File(intStorageDirectory /*Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)*/, "Autostalker");
-                boolean result = public_file.mkdir();
+//                String intStorageDirectory = getFilesDir().toString();
+//
+//                File public_file = new File(intStorageDirectory /*Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)*/, "Autostalker");
+//                boolean result = public_file.mkdir();
 
-                //File file = new File(lastDriveFile);
 
-                File fileContent = new File(public_file.getAbsolutePath() + "/" + lastDriveFileName);
-                //fileContent.delete();
+//                File fileContent = new File(public_file.getAbsolutePath() + "/" + lastDriveFileName);
+
                 FileOutputStream out= new FileOutputStream(fileContent);
                 boolean created = fileContent.createNewFile();
+//                String path = fileContent.getAbsolutePath();
                 FileOutputStream fileOutputStream = new FileOutputStream(fileContent);
                 outputStream = new BufferedOutputStream(fileOutputStream);
 
-                boolean fileexists3= fileContent.exists();
-                success = ftp.retrieveFile("Downloads/" + lastDriveFileName, outputStream);
+                success = ftp.retrieveFile("lastdrive/" + lastDriveFileName, outputStream);
 
-                boolean fileexists= fileContent.exists();
-                boolean fileexists2= fileContent.exists();
+                Uri uri = Uri.fromFile(fileContent);
+                path = uri;
+//                String path = fileContent.getPath();
+//                String absolutePath = fileContent.getAbsolutePath();
+//                String canonicalPath = fileContent.getCanonicalPath();
+//                Log.d("path",path);
+//                Log.d("absolutePath",absolutePath);
+//                Log.d("canonicalPath",canonicalPath);
+//                Log.d("uri",uri.toString());
+//
+//                Intent shareIntent = new Intent(
+//                        android.content.Intent.ACTION_SEND);
+//                shareIntent.setType("video/*");
+//                shareIntent.putExtra(
+//                        android.content.Intent.EXTRA_SUBJECT, "Autostalker");
+//                shareIntent.putExtra(
+//                        android.content.Intent.EXTRA_TITLE, "Autostalker");
+//                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+//                shareIntent
+//                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+//                this.startActivity(Intent.createChooser(shareIntent,
+//                        uri.toString()));
+
 
             } catch(Exception ex1) {
                 String exMessage = ex1.getMessage();
