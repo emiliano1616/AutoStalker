@@ -253,6 +253,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
                     power = 100;
 
                 double originalAngle = angle;
+                angle += offsetAngle;
 
                 if (angle <= 180) {
 
@@ -335,7 +336,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
         };
 
         Observable<MjpegInputStream> toSubscribe = Mjpeg.newInstance()
-                .open("http://192.168.1.15:8090/?action=stream", TIMEOUT);
+                .open("http://192.168.0.14:8090/?action=stream", TIMEOUT);
 
         toSubscribe.subscribe(new Action1<MjpegInputStream>() {
 
@@ -350,7 +351,7 @@ public class DriveModeActivity extends Activity implements InputManager.InputDev
 
 
         Mjpeg.newInstance()
-                .open("http://192.168.1.15:8090/?action=stream", TIMEOUT)
+                .open("http://192.168.0.14:8090/?action=stream", TIMEOUT)
                 .subscribe(new Action1<MjpegInputStream>() {
                     @Override
                     public void call(MjpegInputStream inputStream) {

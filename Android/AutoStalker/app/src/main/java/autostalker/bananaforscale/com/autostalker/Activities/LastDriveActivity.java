@@ -45,7 +45,7 @@ public class LastDriveActivity extends Activity   {
     private TcpClient mTcpClient;
 
     String lastDriveFileName = "final.mp4";
-    String ip_raspberry = "192.168.1.15";
+    String ip_raspberry = "192.168.0.14";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
